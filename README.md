@@ -40,17 +40,17 @@ kubectl get pods -n cert-manager
 **Create a Kubernetes Secret**
 
 ```bash
-    kubectl create secret generic cloudflare-api-token-secret \
-        --namespace=cert-manager \
-        --from-literal=api-token="YOUR_CLOUDFLARE_API_TOKEN"
-    ```
+kubectl create secret generic cloudflare-api-token-secret \
+--namespace=cert-manager \
+--from-literal=api-token="YOUR_CLOUDFLARE_API_TOKEN"
+```
 
 **Create a ClusterIssuer or Issuer**
 
 Now, create a `ClusterIssuer` (or `Issuer` if you want namespace-scoped configuration) that uses the Cloudflare DNS-01 solver.
 
 ```yaml
-# cluster-issuer-cloudflare.yaml
+#cluster-issuer-cloudflare.yaml
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
@@ -58,7 +58,6 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory  # Use the production server
-    # server: https://acme-staging-v02.api.letsencrypt.org/directory # Use the staging server for testing
     email: your-email@example.com  # Replace with your email
     privateKeySecretRef:
       name: letsencrypt-cloudflare-private-key
@@ -81,7 +80,7 @@ kubectl apply -f cluster-issuer-cloudflare.yaml
 Update your Argo CD Ingress (or any other Ingress) to use this `ClusterIssuer`.
 
 ```yaml
-# argocd-ingress.yaml
+#argocd-ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
