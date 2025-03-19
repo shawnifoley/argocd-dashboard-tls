@@ -15,3 +15,6 @@ spec:
             apiTokenSecretRef:
               name: cloudflare-api-token-secret # Name of the Secret we created
               key: api-token # The key within the Secret
+        selector:
+          dnsZones:
+            - "fol3y.us"

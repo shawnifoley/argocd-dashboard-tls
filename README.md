@@ -57,17 +57,20 @@ metadata:
   name: letsencrypt-cloudflare
 spec:
   acme:
-    server: https://acme-v02.api.letsencrypt.org/directory  # Use the production server
-    email: your-email@example.com  # Replace with your email
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: shawnifoley@gmail.com
     privateKeySecretRef:
       name: letsencrypt-cloudflare-private-key
     solvers:
-    - dns01:
-        cloudflare:
-          email: your-email@example.com  # Replace with your Cloudflare account email
-          apiTokenSecretRef:
-            name: cloudflare-api-token-secret  # Name of the Secret we created
-            key: api-token  # The key within the Secret
+      - dns01:
+          cloudflare:
+            email: shawnifoley@gmail.com
+            apiTokenSecretRef:
+              name: cloudflare-api-token-secret # Name of the Secret we created
+              key: api-token # The key within the Secret
+        selector:
+          dnsZones:
+            - "fol3y.us"
 ```
 
 Apply it:
@@ -87,27 +90,27 @@ metadata:
   name: argocd-server-ingress
   namespace: argocd
   annotations:
-    kubernetes.io/ingress.class: nginx
-    cert-manager.io/cluster-issuer: letsencrypt-cloudflare  # Use the new ClusterIssuer
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
+  ingressClassName: nginx
   tls:
-  - hosts:
-    - argocd.example.com  # Your domain
-    secretName: argocd-tls
+    - hosts:
+        - argocd.fol3y.us
+      secretName: letsencrypt-cloudflare-private-key
   rules:
-  - host: argocd.example.com  # Your domain
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: argocd-server
-            port:
-              name: https
+    - host: argocd.fol3y.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 443
 ```
 
 Apply the changes:
@@ -118,7 +121,16 @@ kubectl apply -f argocd-ingress.yaml
 
 **Check Certificate Status:**
 
-
 ```bash
-kubectl describe certificate argocd-tls -n argocd
+# Check the certificate status
+kubectl get certificate -n argocd
+kubectl describe certificate -n argocd
+
+# Check the challenge status
+kubectl get challenge -n argocd
+kubectl describe challenge -n argocd
+
+# Check the order status
+kubectl get order -n argocd
+kubectl describe order -n argocd
 ```

@@ -3,27 +3,26 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: argocd-server-ingress
-  namespace: argocd # Replace with the namespace where Argo CD is installed
+  namespace: argocd
   annotations:
-    kubernetes.io/ingress.class: nginx
-    cert-manager.io/cluster-issuer: letsencrypt-cloudflare # Use our ClusterIssuer
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
+  ingressClassName: nginx
   tls:
     - hosts:
-        - argocd.fol3y.us # Replace with your domain
-      #secretName: argocd-tls # Name of the Secret to store the certificate
+        - argocd.fol3y.us
       secretName: letsencrypt-cloudflare-private-key
   rules:
-    - host: argocd.fol3y.us # Replace with your domain
+    - host: argocd.fol3y.us
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: argocd-server # The name of the Argo CD service
+                name: argocd-server
                 port:
                   number: 443
