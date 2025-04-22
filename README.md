@@ -154,3 +154,88 @@ argocd admin reset-password admin -n argocd
 ```bash
 argocd app create argo-demo --repo https://github.com/shawnifoley/argocd-demo.git   --path . --dest-server https://kubernetes.default.svc --dest-namespace argo-demo
 ```
+
+**Checking ArgoCD Installation in Kubernetes**
+## 1. Check if ArgoCD Namespace Exists
+
+```bash
+kubectl get namespace argocd
+```
+
+## 2. Verify ArgoCD Components
+
+Check if the core ArgoCD pods are running:
+```bash
+kubectl get pods -n argocd
+```
+
+You should see several pods including:
+- argocd-application-controller
+- argocd-dex-server
+- argocd-redis
+- argocd-repo-server
+- argocd-server
+
+## 3. Check ArgoCD Deployments
+
+```bash
+kubectl get deployments -n argocd
+```
+
+## 4. Check ArgoCD Services
+
+```bash
+kubectl get services -n argocd
+```
+
+The service `argocd-server` is the main API and UI server.
+
+## 5. Get ArgoCD Server URL
+
+If using LoadBalancer or NodePort:
+```bash
+kubectl get svc argocd-server -n argocd
+```
+
+## 6. Get Initial Admin Password
+
+For ArgoCD versions before 2.x:
+```bash
+kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
+```
+
+For ArgoCD versions 2.x+:
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
+## 7. Check ArgoCD Version
+
+```bash
+kubectl exec -it -n argocd deployment/argocd-server -- argocd version
+```
+
+## 8. Verify ArgoCD CLI (if installed locally)
+
+If you have the ArgoCD CLI installed:
+```bash
+argocd version
+```
+
+## 9. Check ArgoCD Applications
+
+```bash
+kubectl get applications -n argocd
+```
+
+Or using ArgoCD CLI:
+```bash
+argocd app list
+```
+
+## 10. Check ArgoCD Configuration
+
+```bash
+kubectl get configmap argocd-cm -n argocd
+kubectl get configmap argocd-rbac-cm -n argocd
+```
