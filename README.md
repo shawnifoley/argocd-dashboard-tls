@@ -239,3 +239,129 @@ argocd app list
 kubectl get configmap argocd-cm -n argocd
 kubectl get configmap argocd-rbac-cm -n argocd
 ```
+
+## 11. Check ArgoCD TLS Configuration
+
+```bash
+kubectl get secret letsencrypt-cloudflare-private-key -n argocd
+```
+
+# Verifying cert-manager Installation in Kubernetes
+
+## 1. Check if cert-manager Namespace Exists
+
+```bash
+kubectl get namespace cert-manager
+```
+
+## 2. Verify cert-manager Pods
+
+Check if all cert-manager pods are running:
+```bash
+kubectl get pods -n cert-manager
+```
+
+You should see several pods running:
+- cert-manager (the main controller)
+- cert-manager-cainjector
+- cert-manager-webhook
+
+All pods should be in the "Running" state.
+
+## 3. Check cert-manager Deployments
+
+```bash
+kubectl get deployments -n cert-manager
+```
+
+Verify all deployments have the desired number of replicas available.
+
+## 4. Check cert-manager CRDs (Custom Resource Definitions)
+
+cert-manager installs several CRDs that are essential for its operation:
+```bash
+kubectl get crd | grep cert-manager
+```
+
+You should see CRDs including:
+- certificates.cert-manager.io
+- certificaterequests.cert-manager.io
+- challenges.acme.cert-manager.io
+- clusterissuers.cert-manager.io
+- issuers.cert-manager.io
+- orders.acme.cert-manager.io
+
+## 5. Check cert-manager Version
+
+```bash
+kubectl -n cert-manager get deployment cert-manager -o jsonpath='{.spec.template.spec.containers[0].image}'
+```
+
+## 6. Verify Issuers and ClusterIssuers
+
+Check for any configured Issuers:
+```bash
+kubectl get issuers --all-namespaces
+```
+
+Check for any configured ClusterIssuers:
+```bash
+kubectl get clusterissuers
+```
+
+## 7. Check for Existing Certificates
+
+```bash
+kubectl get certificates --all-namespaces
+```
+
+## 8. Test cert-manager with a Self-Signed Certificate
+
+You can test cert-manager by creating a test issuer and certificate:
+
+1. Create a test issuer YAML file (test-issuer.yaml):
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: test-selfsigned
+  namespace: default
+spec:
+  selfSigned: {}
+```
+
+2. Apply the issuer:
+```bash
+kubectl apply -f test-issuer.yaml
+```
+
+3. Create a test certificate YAML file (test-certificate.yaml):
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selfsigned-cert
+  namespace: default
+spec:
+  dnsNames:
+    - example.com
+  secretName: selfsigned-cert-tls
+  issuerRef:
+    name: test-selfsigned
+    kind: Issuer
+```
+
+4. Apply the certificate:
+```bash
+kubectl apply -f test-certificate.yaml
+```
+
+5. Check if the certificate was issued:
+```bash
+kubectl get certificate -n default selfsigned-cert
+```
+
+6. Verify the secret was created:
+```bash
+kubectl get secret -n default selfsigned-cert-tls
+```
