@@ -27,8 +27,8 @@ helm install \
 cert-manager jetstack/cert-manager \
 --namespace cert-manager \
 --create-namespace \
---version v1.12.0 \
---set installCRDs=true
+--version v1.17.1 \
+--set crds.enabled=true
 ```
 
 Verify installation:
@@ -133,4 +133,24 @@ kubectl describe challenge -n argocd
 # Check the order status
 kubectl get order -n argocd
 kubectl describe order -n argocd
+```
+
+**Get default admin password**
+```bash
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
+# or with argocd cli
+argocd admin initial-password -n argocd
+```
+
+**Reset default admin password**
+```bash
+kubectl delete secret argocd-initial-admin-secret -n argocd
+kubectl create secret generic argocd-initial-admin-secret --from-literal=password=<new_password> -n argocd
+# or with argocd cli
+argocd admin reset-password admin -n argocd
+```
+
+**Deploy demo-apps**
+```bash
+argocd app create argo-demo --repo https://github.com/shawnifoley/argocd-demo.git   --path . --dest-server https://kubernetes.default.svc --dest-namespace argo-demo
 ```
