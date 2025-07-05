@@ -147,7 +147,7 @@ argocd admin initial-password -n argocd
 kubectl delete secret argocd-initial-admin-secret -n argocd
 kubectl create secret generic argocd-initial-admin-secret --from-literal=password=<new_password> -n argocd
 # or with argocd cli
-argocd admin reset-password admin -n argocd
+argocd account update-password
 ```
 
 **Deploy demo-apps**
